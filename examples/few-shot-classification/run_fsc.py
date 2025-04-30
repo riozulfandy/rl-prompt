@@ -35,6 +35,9 @@ def main(config: "DictConfig"):
     print('Val Size', len(val_dataset))
     print('Examples:', val_dataset[:5])
 
+    if 'buruk' in verbalizers or 'marah' in verbalizers:
+        config.policy_lm = 'flax-community/gpt2-small-indonesian'
+
     policy_model = make_lm_adaptor_model(config)
     prompt_model = make_single_prompt_model(policy_model, config)
     reward = make_prompted_classification_reward(num_classes, verbalizers, 
