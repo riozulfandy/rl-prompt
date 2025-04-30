@@ -53,7 +53,7 @@ def load_few_shot_classification_dataset(
     num_shots: int
 ) -> Tuple[List[str]]:
     assert dataset in ['agnews', 'cr', 'mr', 'sst-2', 
-                       'sst-5', 'yelp-2', 'yelp-5']
+                       'sst-5', 'yelp-2', 'yelp-5','indolem-sentiment', 'indonlu-emot']
     assert split in ['train', 'dev', 'test']
     assert num_shots in [16]
 
@@ -107,6 +107,10 @@ def get_dataset_verbalizers(dataset: str) -> List[str]:
                     '\u0120Village', '\u0120Animal',
                     '\u0120Plant', '\u0120Album',
                     '\u0120Film', '\u0120Written']
+    elif dataset == 'indolem-sentiment':
+        verbalizers = ['buruk', 'baik']
+    elif dataset == 'indonlu-emot':
+        verbalizers = ['senang', 'marah', 'takut', 'sedih', 'cinta']
     return verbalizers
 
 
