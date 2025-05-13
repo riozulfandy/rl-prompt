@@ -16,8 +16,8 @@ class PromptedClassificationReward(BaseReward):
         task_lm: str,
         is_mask_lm: Optional[bool],
         compute_zscore: bool,
-        incorrect_coeff: float, # lambda_1 in paper
-        correct_coeff: float, # lambda_2 in paper
+        incorrect_coeff: float, 
+        correct_coeff: float,
         num_classes: int,
         verbalizers: List[str],
         template: Optional[str]

@@ -9,8 +9,8 @@ from transformers import (AutoTokenizer,
                           AutoModelForMaskedLM)
 
 SUPPORTED_LEFT_TO_RIGHT_LMS = ['distilgpt2', 'gpt2', 'gpt2-medium',
-                               'gpt2-large', 'gpt2-xl']
-SUPPORTED_MASK_LMS = ['distilroberta-base', 'roberta-base', 'roberta-large']
+                               'gpt2-large', 'gpt2-xl', 'flax-community/gpt2-small-indonesian']
+SUPPORTED_MASK_LMS = ['distilroberta-base', 'roberta-base', 'roberta-large', 'indolem/indobert-base-uncased']
 
 
 class PromptedClassificationEvaluator:
