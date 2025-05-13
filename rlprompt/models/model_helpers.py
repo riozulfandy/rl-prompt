@@ -31,7 +31,7 @@ def make_input_conditioned_prompt_model(model: BaseModel,
 
 @dataclass
 class LMAdaptorModelConfig:
-    policy_lm: str = "distilgpt2"
+    policy_lm: str = "flax-community/gpt2-small-indonesian"
     # Name of the backbone pretrained LM
     hidden_size: int = 2048
     # Dimension for the hidden state of the enclosed adaptor MLP

@@ -70,7 +70,8 @@ class PromptedClassificationEvaluator:
 
     def load_default_template(self) -> List[str]:
         if self.is_mask_lm:
-            template = "{sentence_1} {prompt} <mask> ."
+            mask_token = self._tokenizer.mask_token
+            template = f"{{sentence_1}} {{prompt}} {mask_token} ."
         else:
             # Template for left-to-right LMs like GPT-2
             template = "{sentence_1} {prompt}"

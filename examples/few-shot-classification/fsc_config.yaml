@@ -8,7 +8,7 @@ base_path: "./data"
 dataset: "???"
 dataset_seed: 0
 # Reward
-task_lm: "roberta-large"
+task_lm: "indolem/indobert-base-uncased"
 # Single Prompt Model
 prompt_length: 5
 prompt_train_batch_size: 16
