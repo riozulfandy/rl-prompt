@@ -85,7 +85,7 @@ class PromptedClassificationEvaluator:
     ) -> torch.Tensor:
         # for MLM, add mask token
         batch_size = len(texts)
-        encoded_inputs = self._tokenizer(texts, padding='longest',
+        encoded_inputs = self._tokenizer(texts, padding='longest', max_length=512,
                                          truncation=True, return_tensors="pt",
                                          add_special_tokens=True)
 

@@ -34,7 +34,7 @@ class PromptedClassificationReward(BaseReward):
         print('Task LM:', self.task_lm)
         if self.is_mask_lm:
             assert self.task_lm in SUPPORTED_MASK_LMS
-            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm)
+            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm, truncation_side="left")
             self._generator = (AutoModelForMaskedLM
                                .from_pretrained(self.task_lm)
                                .to(self.device))
@@ -199,7 +199,7 @@ class PromptedClassificationReward(BaseReward):
     ) -> torch.Tensor:
         # for MLM, add mask token
         batch_size = len(texts)
-        encoded_inputs = self._tokenizer(texts, padding='longest',
+        encoded_inputs = self._tokenizer(texts, padding='longest', max_length=512,
                                          truncation=True, return_tensors="pt",
                                          add_special_tokens=True)
 
