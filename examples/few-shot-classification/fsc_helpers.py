@@ -72,7 +72,7 @@ def load_few_shot_classification_dataset(
     num_classes = len(verbalizers)
 
     template = None
-    if dataset == 'agnews': 
+    if dataset == 'agnews' or dataset == 'indolem-sentiment' or dataset == 'indonlu-emot': 
         template = "<mask> {prompt} {sentence_1}"
 
     return (source_texts, class_labels, 

@@ -34,7 +34,7 @@ class PromptedClassificationReward(BaseReward):
         print('Task LM:', self.task_lm)
         if self.is_mask_lm:
             assert self.task_lm in SUPPORTED_MASK_LMS
-            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm, truncation_side="left")
+            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm)
             self._generator = (AutoModelForMaskedLM
                                .from_pretrained(self.task_lm)
                                .to(self.device))
