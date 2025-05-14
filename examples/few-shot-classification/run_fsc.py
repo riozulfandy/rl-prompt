@@ -41,7 +41,7 @@ def main(config: "DictConfig"):
                                                  template, config)
     algo_module = make_sql_module(prompt_model, reward, config)
 
-    # Hack for few-shot classification - Each batch contains all examples
+    
     config.train_batch_size = len(train_dataset)
     config.eval_batch_size = len(val_dataset)
     config.save_dir = os.path.join(output_dir, config.save_dir)

@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-import numpy as np
+from omegaconf import DictConfig
 import pandas as pd
 import os
 from torch.utils.data import Dataset
-from transformers import AutoTokenizer
 from typing import Optional, Tuple, List
 
 from fsc_reward import PromptedClassificationReward
@@ -84,12 +83,12 @@ def load_few_shot_classification_dataset(
 
 def get_dataset_verbalizers(dataset: str) -> List[str]: 
     if dataset in ['sst-2', 'yelp-2', 'mr', 'cr']:
-        verbalizers = ['\u0120terrible', '\u0120great'] # num_classes
+        verbalizers = ['\u0120terrible', '\u0120great']
     elif dataset == 'agnews': 
-        verbalizers = ['World', 'Sports', 'Business', 'Tech'] # num_classes
+        verbalizers = ['World', 'Sports', 'Business', 'Tech']
     elif dataset in ['sst-5', 'yelp-5']:
         verbalizers = ['\u0120terrible', '\u0120bad', '\u0120okay', 
-                       '\u0120good', '\u0120great'] # num_classes
+                       '\u0120good', '\u0120great']
     elif dataset == 'subj':
         verbalizers = ['\u0120subjective', '\u0120objective']
     elif dataset == 'trec':

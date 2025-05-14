@@ -42,9 +42,10 @@ class LMAdaptorModel(BaseModel):
     ):
         super().__init__()
 
-        assert policy_lm in SUPPORTED_LMS  # TODO: Support more LMs
+        assert policy_lm in SUPPORTED_LMS 
         model = policy_lm
-        self.device = 0  # TODO
+
+        self.device = 0
         self.tokenizer = AutoTokenizer.from_pretrained(
             model,
             pad_token='[PAD]')
@@ -70,6 +71,7 @@ class LMAdaptorModel(BaseModel):
             if isinstance(m, nn.Linear):
                 nn.init.xavier_uniform_(m.weight, gain=0.0001)
                 m.bias.data.fill_(-0.0001)
+
         self.mlp.apply(_init_weights)
 
     def _mlp_forward(self, state: torch.Tensor) -> torch.Tensor:
@@ -131,9 +133,8 @@ class LMAdaptorModel(BaseModel):
         sample_tokens = [[] for _ in source_texts]
         sample_ids, sample_logits = [], []
         for i in range(max_new_tokens):
-            logits = self._mlp_forward(state)  # [batch_size, vocab_size]
+            logits = self._mlp_forward(state)
             logits = logits + self.logit_bias
-            # print(logits[:, 4:].min().item(), logits.max().item())
 
             if top_k is not None:
                 sampling_logits = _top_k_logits(logits, k=top_k)
@@ -144,7 +145,7 @@ class LMAdaptorModel(BaseModel):
 
             actions = (torch.distributions.categorical
                        .Categorical(logits=sampling_logits)
-                       .sample())  # [batch_size]
+                       .sample()) 
             tokens = [self.generator.tokenizer.convert_ids_to_tokens([a])[0]
                       for a in actions.tolist()]
             token_strs = [self.generator.tokenizer.convert_tokens_to_string([t])
@@ -152,16 +153,14 @@ class LMAdaptorModel(BaseModel):
 
             for s, t in zip(sample_tokens, tokens): 
                 s.append(t)
-            sample_ids.append(actions.unsqueeze(dim=1))  # [batch_size, 1]
+
+            sample_ids.append(actions.unsqueeze(dim=1)) 
             sample_logits.append(logits.unsqueeze(dim=1))
-            # [batch_size, 1, vocab_size]
 
             state, past_key_values = self._get_generation_cache(token_strs,
                                                                 past_key_values)
 
-        # [batch_size, prompt_length]
         sample_ids = torch.cat(sample_ids, dim=1)
-        # [batch_size, prompt_length, vocab_size]
         sample_logits = torch.cat(sample_logits, dim=1)
         sample_lengths = (torch.tensor([max_new_tokens
                                         for _ in range(sample_ids.shape[0])])
@@ -185,12 +184,12 @@ class LMAdaptorModel(BaseModel):
         state, past_key_values = self._get_generation_cache(source_texts)
         sample_tokens = [[] for _ in source_texts]
         sample_ids, sample_logits = [], []
+
         for i in range(max_new_tokens):
             logits = self._mlp_forward(state)
             logits = logits + self.logit_bias
-            # print(logits[:, 4:].min().item(), logits.max().item())
 
-            actions = logits.argmax(dim=-1)  # [batch_size]
+            actions = logits.argmax(dim=-1) 
             tokens = [self.generator.tokenizer.convert_ids_to_tokens([a])[0]
                       for a in actions.tolist()]
             token_strs = [self.generator.tokenizer.convert_tokens_to_string([t])
@@ -198,6 +197,7 @@ class LMAdaptorModel(BaseModel):
 
             for s, t in zip(sample_tokens, tokens): 
                 s.append(t)
+
             sample_ids.append(actions.unsqueeze(dim=1))
             sample_logits.append(logits.unsqueeze(dim=1))
 
@@ -227,12 +227,12 @@ class LMAdaptorModel(BaseModel):
                           .to(self.device))
         input_ids = token_encoding['input_ids']
         input_lengths = token_encoding['attention_mask'].sum(dim=1)
+
         outputs = self.generator.model.transformer(input_ids,
                                                    past_key_values=past_key_values,
                                                    use_cache=True)
-        last_token_hidden_state = \
-            outputs.last_hidden_state[np.arange(input_ids.shape[0]),
-                                      (input_lengths - 1)]
+        
+        last_token_hidden_state = outputs.last_hidden_state[np.arange(input_ids.shape[0]),(input_lengths - 1)]
         past_key_values = outputs.past_key_values
         return last_token_hidden_state, past_key_values
 
@@ -248,6 +248,7 @@ class LMAdaptorModel(BaseModel):
         **kwargs
     ) -> Dict[str, Union[torch.Tensor, List[str]]]:
         assert num_beams == 1, "Beam search not supported yet"
+
         if max_new_tokens is None:
             max_new_tokens = self.max_decoding_length
         if eos_token_id is None:
@@ -255,6 +256,7 @@ class LMAdaptorModel(BaseModel):
 
         is_greedy_gen_mode = (do_sample == False) and (num_beams == 1)
         is_sample_gen_mode = (do_sample == True) and (num_beams == 1)
+        
         assert is_greedy_gen_mode or is_sample_gen_mode
 
         if is_greedy_gen_mode:

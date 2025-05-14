@@ -78,7 +78,6 @@ def get_lengths_mask(
 
 
 # Below from Texar-PyTorch: https://github.com/asyml/texar-pytorch/blob/master/texar/torch/losses/losses_utils.py
-
 def mask_and_reduce(
     sequence: torch.Tensor,
     sequence_length: Optional[torch.LongTensor],
@@ -277,7 +276,6 @@ def reduce_dimensions(
 
 # Below from Texar-PyTorch:
 # https://github.com/asyml/texar-pytorch/blob/master/texar/torch/utils/utils.py
-
 def sequence_mask(
     lengths: Union[torch.LongTensor, List[int]],
     max_len: Optional[int] = None,
@@ -350,7 +348,6 @@ def _get_entropy(logits: torch.Tensor) -> torch.Tensor:
 
 # Below from
 # https://github.com/asyml/texar-pytorch/blob/master/texar/torch/utils/shapes.py
-
 def transpose_batch_time(inputs: torch.Tensor) -> torch.Tensor:
     r"""Transposes inputs between time-major and batch-major.
     Args:

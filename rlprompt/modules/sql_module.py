@@ -34,7 +34,6 @@ class SQLModule(BaseModule):
         num_beams: int,
     ):
         super().__init__()
-        # Initialize self._model and self._reward
         assert target_update_method in ["copy", "polyak"]
         assert not (top_k is not None and top_p < 1.0), \
                "Only one of top_k or top_p should be selected"
@@ -44,10 +43,7 @@ class SQLModule(BaseModule):
             self._target_model = copy.deepcopy(self._model)
         else:
             self._target_model = target_model
-        # for p1, p2 in zip(self._model.parameters(), self._target_model.parameters()):
-        #     if p1.data.ne(p2.data).sum() > 0:
-        #         print(False)
-        #     print(True) 
+    
         self._reward = reward
 
         self._sql_loss_impl = sql_loss_impl
@@ -71,14 +67,9 @@ class SQLModule(BaseModule):
             self._reward_shaping_func = lambda _r: _r
 
     def _sync_target_model(self) -> None:
-        # https://github.com/transedward/pytorch-dqn/blob/master/dqn_learn.py#L221
         if self._target_update_method == "copy":
             self._target_model.load_state_dict(self._model.state_dict())
 
-        # Target network update
-        # Note that we are assuming `model.parameters()`
-        # would yield the same parameter orders.
-        # https://towardsdatascience.com/double-deep-q-networks-905dd8325412
         if self._target_update_method == "polyak":
             for param_, param in zip(self._target_model.parameters(),
                                      self._model.parameters()):
@@ -101,7 +92,6 @@ class SQLModule(BaseModule):
             loss_list.append(_loss)
             loss_log_list.append(_loss_log)
 
-        # https://discuss.pytorch.org/t/get-the-mean-from-a-list-of-tensors/31989/2
         loss = torch.mean(torch.stack(loss_list))
         loss_log = utils.unionize_dicts(loss_log_list)
 
@@ -113,7 +103,6 @@ class SQLModule(BaseModule):
         batch: Dict[str, Any]
     ) -> Tuple[torch.Tensor, Dict]:
         if mode != ForwardMode.SQL_ON and mode != ForwardMode.INFER:
-            # TODO: Enable training modes other than on-policy
             raise NotImplementedError('Only on-policy sampling and greedy '
                                       'inference is supported now')
 

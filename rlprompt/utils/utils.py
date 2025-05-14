@@ -34,8 +34,6 @@ def add_prefix_to_dict_keys_inplace(
         prefix: str,
         keys_to_exclude: Optional[List[str]] = None,
 ) -> None:
-
-    # https://stackoverflow.com/questions/4406501/change-the-name-of-a-key-in-dictionary
     keys = list(d.keys())
     for key in keys:
         if keys_to_exclude is not None and key in keys_to_exclude:

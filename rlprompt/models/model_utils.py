@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 
 def _top_k_logits(
     logits: torch.Tensor,

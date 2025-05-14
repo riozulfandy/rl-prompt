@@ -1,5 +1,5 @@
 import torch
-from typing import Optional, List, Union, Any, Dict
+from typing import Optional, List, Any, Dict
 from .base_model import BaseModel
 
 

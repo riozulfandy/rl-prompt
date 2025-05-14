@@ -1,7 +1,8 @@
+from omegaconf import DictConfig
 import torch
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
-from typing import Optional, Callable, Dict, Any, Union, List
+from typing import Optional, Dict, Any, Union, List
 import os
 import wandb
 import json
@@ -232,7 +233,6 @@ class Trainer:
         print('Finish Eval')
         return utils.unionize_dicts([
             score_log,
-            # gem_scores_dict,
             {
                 f"eval/score": score,
                 f"eval/output_length": np.mean([len(tokens) \

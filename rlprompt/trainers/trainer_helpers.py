@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from omegaconf import DictConfig
 from torch.utils.data import Dataset
 from typing import Optional
 

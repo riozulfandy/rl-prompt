@@ -1,24 +1,14 @@
 import torch
-# import numpy as np
-# import sys
-# if sys.version_info >= (3, 8):
-#     from typing import Union, List, Dict, Any, TypedDict, NamedTuple, Callable
-# else:
-#     from typing import Union, List, Dict, Any, NamedTuple, Callable
-#     from typing_extensions import TypedDict
+
 from typing import Callable
 from enum import Enum
 
 
 class ForwardMode(Enum):
-    # MLE = "MLE"
-    # PG = "PG"
     SQL_ON = "SQL_ON"
     SQL_OFF_GT = "SQL_OFF_GT"
-    # SQL_OFF_RB = "SQL_OFF_RB"
-    # SQL_OFF_BEHAVIOR = "SQL_OFF_BEHAVIOR"
+   
     INFER = "INFER"
-
 
 def get_reward_shaping_func(
     old_min: float,

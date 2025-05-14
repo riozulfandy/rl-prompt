@@ -119,12 +119,9 @@ def soft_q_loss_with_sparse_rewards_1(
         tensor=logits,
         index=actions,
         shape=actions.shape)
-    # use `V` from the target if available
+    
     V_ = logits_.logsumexp(dim=-1)
 
-    # Build the target `= V_t+1 + r`
-    # where we assume the rewards to be sparse
-    # i.e., only comes at the final step
     Q_ = torch.zeros_like(Q)
     Q_[:, :-1] = V_[:, 1:]
     Q_[
@@ -157,9 +154,6 @@ def soft_q_loss_with_sparse_rewards_2(
         shape=actions.shape)
     V = logits.logsumexp(dim=-1)
     A = Q - V
-    # print(logits.shape)
-    # print(V)
-    print(Q)
 
     # Target outputs
     Q_ = torch.zeros_like(Q)
@@ -167,15 +161,11 @@ def soft_q_loss_with_sparse_rewards_2(
     V_ = logits_.logsumexp(dim=-1)
     Q_[:, :-1] = V_[:, 1:]
     A_[:, :-1] = V_[:, 1:] - V_[:, :-1]
-    # Terminal V-target is the last V-target before
-    # the episode ends, thus depends on `sequence_length`
+    
     terminal_V_ = V_[
         torch.arange(sequence_length.shape[0]),
         sequence_length - 1]
-#     print(Q_)
-#     print(sequence_length)
-#     print(torch.arange(sequence_length.shape[0]))
-#     print(rewards)
+
     Q_[
         torch.arange(sequence_length.shape[0]),
         sequence_length - 1] = rewards
@@ -227,10 +217,6 @@ def soft_q_loss_with_sparse_rewards_3(
         dim=-1)
 
     if freeze_future_steps is True:
-        # This line of code essentially
-        # decompose `A` (with gradient)
-        # and cumsum of future `A`
-        # (without gradient)
         A2 = (A2 - A).detach() + A
 
     raw_losses = F.mse_loss(
@@ -380,8 +366,6 @@ def soft_q_loss_with_sparse_rewards_2_2_reversed_3_3_reversed(
         coefficient=coefficient)
 
     raw_losses = (raw_losses_2 + raw_losses_3) / 2
-    # print(rewards)
-    # print(raw_losses)
 
     utils.add_prefix_to_dict_keys_inplace(
         quantities_to_log_2, prefix="v2/")

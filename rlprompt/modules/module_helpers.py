@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from omegaconf import DictConfig
+
 from rlprompt.modules import SQLModule
 from rlprompt.models import BaseModel
 from rlprompt.rewards import BaseReward
@@ -28,8 +30,7 @@ class SQLModuleConfig:
     target_update_method: str = "polyak"
     target_update_steps: Optional[int] = None
     target_learning_rate: float = 0.001
-    # Reward shaping linearly transforms reward range of [old_min, old_max]
-    # to [new_min, new_max]
+    # Reward shaping linearly transforms reward range of [old_min, old_max] to [new_min, new_max]
     reward_shaping: bool = True
     reward_shaping_old_min: float = 0
     reward_shaping_old_max: float = 100
