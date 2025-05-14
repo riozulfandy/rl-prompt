@@ -53,7 +53,7 @@ class SinglePromptModelConfig:
     prompt_length: int = 5
     prompt_train_batch_size: int = 8
     prompt_infer_batch_size: int = 8
-    source_str: str = "<|endoftext|>"
+    source_str: str = "[SEP]"
 
     
 @dataclass

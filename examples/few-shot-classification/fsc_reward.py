@@ -6,7 +6,7 @@ from collections import defaultdict
 from rlprompt.rewards import BaseReward
 
 SUPPORTED_LEFT_TO_RIGHT_LMS = ['distilgpt2', 'gpt2', 'gpt2-medium',
-                               'gpt2-large', 'gpt2-xl', 'flax-community/gpt2-small-indonesian']
+                               'gpt2-large', 'gpt2-xl', 'flax-community/gpt2-small-indonesian', 'cahya/gpt2-small-indonesian-522M']
 SUPPORTED_MASK_LMS = ['distilroberta-base', 'roberta-base', 'roberta-large', 'indolem/indobert-base-uncased']
 
 
@@ -41,7 +41,7 @@ class PromptedClassificationReward(BaseReward):
         else:
             assert self.task_lm in SUPPORTED_LEFT_TO_RIGHT_LMS
             self._tokenizer = AutoTokenizer.from_pretrained(
-                self.task_lm, pad_token='<|endoftext|>')
+                self.task_lm, pad_token='[PAD]')
             self._generator = (GPT2LMHeadModel
                                .from_pretrained(self.task_lm)
                                .to(self.device))
