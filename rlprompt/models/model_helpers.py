@@ -24,7 +24,7 @@ def make_single_prompt_model(model: BaseModel,
 
 @dataclass
 class LMAdaptorModelConfig:
-    policy_lm: str = "flax-community/gpt2-small-indonesian"
+    policy_lm: str = "distilgpt2"
     # Name of the backbone pretrained LM
     hidden_size: int = 2048
     # Dimension for the hidden state of the enclosed adaptor MLP
