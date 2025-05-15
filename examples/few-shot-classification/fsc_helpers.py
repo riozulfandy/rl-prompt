@@ -73,9 +73,6 @@ def load_few_shot_classification_dataset(
     template = None
     if dataset == 'agnews': 
         template = "<mask> {prompt} {sentence_1}"
-    
-    if dataset in ['indolem-sentiment', 'indonlu-emot']:
-        template = "'{sentence_1}' {prompt}. Ini [MASK]"
 
     return (source_texts, class_labels, 
             num_classes, verbalizers, template)
@@ -110,7 +107,7 @@ def get_dataset_verbalizers(dataset: str) -> List[str]:
                     '\u0120Plant', '\u0120Album',
                     '\u0120Film', '\u0120Written']
     elif dataset == 'indolem-sentiment':
-        verbalizers = ['buruk', 'baik']
+        verbalizers = ['negatif', 'positif']
     elif dataset == 'indonlu-emot':
         verbalizers = ['senang', 'marah', 
                     'takut', 'sedih', 

@@ -35,7 +35,7 @@ class PromptedClassificationReward(BaseReward):
         print('Task LM:', self.task_lm)
         if self.is_mask_lm:
             assert self.task_lm in SUPPORTED_MASK_LMS
-            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm)
+            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm, truncate_side='left')
             self._generator = (AutoModelForMaskedLM
                                .from_pretrained(self.task_lm)
                                .to(self.device))
@@ -132,7 +132,7 @@ class PromptedClassificationReward(BaseReward):
                 quantities_to_log['macro_f1'].append(macro_f1)
             else: # Handle case with no classes or empty batch for F1
                 quantities_to_log['macro_f1'].append(0.0)
-                
+
             for c in range(self.num_classes):
                 class_idx = np.array(class_labels) == c
                 class_rewards = gap_rewards[class_idx]
@@ -154,7 +154,8 @@ class PromptedClassificationReward(BaseReward):
                                class_example, '|',
                                'Probs:', class_example_probs, '\n']
             print_strs += ['Accuracy:', acc.item(), '|',
-                           'Reward:', round(reward.item(), 2)]
+                           'Reward:', round(reward.item(), 2), "|",
+                           'Macro F1:', round(macro_f1, 2), '\n']
             print(*print_strs)
         rewards_tensor = torch.stack(rewards)
 

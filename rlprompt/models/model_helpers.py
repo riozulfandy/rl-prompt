@@ -24,13 +24,13 @@ def make_single_prompt_model(model: BaseModel,
 
 @dataclass
 class LMAdaptorModelConfig:
-    policy_lm: str = "flax-community/gpt2-small-indonesian"
+    policy_lm: str = "cahya/gpt2-small-indonesian-522M"
     # Name of the backbone pretrained LM
     hidden_size: int = 2048
     # Dimension for the hidden state of the enclosed adaptor MLP
     logit_bias: float = 0.0
     # Added to all prompt token logits. Set negative value to encourage exploration.
-    fluent: bool = True
+    fluent: bool = False
     # if True, constrain tokens to be from those with top-k probability under
     # a GPT-2 model
     fluent_top_k: int = 20
@@ -46,4 +46,4 @@ class SinglePromptModelConfig:
     prompt_length: int = 5
     prompt_train_batch_size: int = 8
     prompt_infer_batch_size: int = 8
-    source_str: str = "[SEP]"
+    source_str: str = "<|endoftext|>'"
