@@ -49,8 +49,8 @@ class LMAdaptorModel(BaseModel):
         self.device = 0
         self.tokenizer = AutoTokenizer.from_pretrained(
             model,
-            pad_token='<pad>')
-        self.generator = pipeline("text2text-generation",
+            pad_token='<|endoftext|>')
+        self.generator = pipeline("text-generation",
                                   tokenizer=self.tokenizer,
                                   model=model,
                                   device=self.device)
