@@ -75,7 +75,7 @@ def load_few_shot_classification_dataset(
         template = "<mask> {prompt} {sentence_1}"
     
     if dataset in ['indolem-sentiment', 'indonlu-emot']:
-        template = "[MASK] {prompt} {sentence_1}"
+        template = "'{sentence_1}' {prompt}. Ini [MASK]"
 
     return (source_texts, class_labels, 
             num_classes, verbalizers, template)

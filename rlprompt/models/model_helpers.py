@@ -30,7 +30,7 @@ class LMAdaptorModelConfig:
     # Dimension for the hidden state of the enclosed adaptor MLP
     logit_bias: float = 0.0
     # Added to all prompt token logits. Set negative value to encourage exploration.
-    fluent: bool = False
+    fluent: bool = True
     # if True, constrain tokens to be from those with top-k probability under
     # a GPT-2 model
     fluent_top_k: int = 20
