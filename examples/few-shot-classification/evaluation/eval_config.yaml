@@ -6,6 +6,6 @@ base_path: "../data"
 dataset: "???"
 dataset_seed: 0
 # Reward
-task_lm: "indolem/indobert-base-uncased"
+task_lm: "distilroberta-base"
 is_mask_lm: null
 prompt: "???"

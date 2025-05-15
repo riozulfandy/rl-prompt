@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from transformers import AutoTokenizer, AutoModelForMaskedLM, GPT2LMHeadModel
+from transformers import AutoTokenizer, AutoModelForMaskedLM
 from typing import List, Dict, Optional, Tuple, Union, Any
 from collections import defaultdict
 from rlprompt.rewards import BaseReward
@@ -35,7 +35,7 @@ class PromptedClassificationReward(BaseReward):
         print('Task LM:', self.task_lm)
         if self.is_mask_lm:
             assert self.task_lm in SUPPORTED_MASK_LMS
-            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm, truncate_side='left')
+            self._tokenizer = AutoTokenizer.from_pretrained(self.task_lm)
             self._generator = (AutoModelForMaskedLM
                                .from_pretrained(self.task_lm)
                                .to(self.device))
@@ -110,29 +110,6 @@ class PromptedClassificationReward(BaseReward):
             acc = correct.float().mean()
             quantities_to_log['acc'] = acc
 
-            # Calculate F1 score
-            predicted_labels = torch.argmax(class_probs, dim=-1)
-            class_labels_tensor = torch.tensor(class_labels, device=predicted_labels.device, dtype=torch.long)
-            
-            current_prompt_f1_scores = []
-            for c_idx in range(self.num_classes):
-                tp = ((predicted_labels == c_idx) & (class_labels_tensor == c_idx)).sum().float()
-                fp = ((predicted_labels == c_idx) & (class_labels_tensor != c_idx)).sum().float()
-                fn = ((predicted_labels != c_idx) & (class_labels_tensor == c_idx)).sum().float()
-
-                precision = tp / (tp + fp + 1e-8)  # Add epsilon to avoid division by zero
-                recall = tp / (tp + fn + 1e-8)     # Add epsilon to avoid division by zero
-                
-                f1_class = 2 * (precision * recall) / (precision + recall + 1e-8)
-                quantities_to_log[f"f1_class_{c_idx}"].append(f1_class.item())
-                current_prompt_f1_scores.append(f1_class)
-            
-            if current_prompt_f1_scores: # Ensure list is not empty
-                macro_f1 = torch.stack(current_prompt_f1_scores).mean().item()
-                quantities_to_log['macro_f1'].append(macro_f1)
-            else: # Handle case with no classes or empty batch for F1
-                quantities_to_log['macro_f1'].append(0.0)
-
             for c in range(self.num_classes):
                 class_idx = np.array(class_labels) == c
                 class_rewards = gap_rewards[class_idx]
@@ -154,8 +131,7 @@ class PromptedClassificationReward(BaseReward):
                                class_example, '|',
                                'Probs:', class_example_probs, '\n']
             print_strs += ['Accuracy:', acc.item(), '|',
-                           'Reward:', round(reward.item(), 2), "|",
-                           'Macro F1:', round(macro_f1, 2), '\n']
+                           'Reward:', round(reward.item(), 2)]
             print(*print_strs)
         rewards_tensor = torch.stack(rewards)
 
@@ -206,7 +182,7 @@ class PromptedClassificationReward(BaseReward):
         texts: List[str]
     ) -> torch.Tensor:
         batch_size = len(texts)
-        encoded_inputs = self._tokenizer(texts, padding='longest', max_length=512,
+        encoded_inputs = self._tokenizer(texts, padding='longest',
                                          truncation=True, return_tensors="pt",
                                          add_special_tokens=True)
 

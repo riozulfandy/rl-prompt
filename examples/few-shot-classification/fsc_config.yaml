@@ -10,7 +10,7 @@ dataset: "???"
 dataset_seed: 0
 
 # Reward
-task_lm: "indolem/indobert-base-uncased"
+task_lm: "distilroberta-base"
 
 # Single Prompt Model
 prompt_length: 5

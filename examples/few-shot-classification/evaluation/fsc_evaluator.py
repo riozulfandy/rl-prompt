@@ -72,7 +72,7 @@ class PromptedClassificationEvaluator:
         texts: List[str]
     ) -> torch.Tensor:
         batch_size = len(texts)
-        encoded_inputs = self._tokenizer(texts, padding='longest', max_length=512,
+        encoded_inputs = self._tokenizer(texts, padding='longest',
                                          truncation=True, return_tensors="pt",
                                          add_special_tokens=True)
 
