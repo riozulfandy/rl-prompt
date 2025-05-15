@@ -107,7 +107,7 @@ def get_dataset_verbalizers(dataset: str) -> List[str]:
                     '\u0120Plant', '\u0120Album',
                     '\u0120Film', '\u0120Written']
     elif dataset == 'indolem-sentiment':
-        verbalizers = ['negatif', 'positif']
+        verbalizers = ['\u0120buruk', '\u0120baik']
     elif dataset == 'indonlu-emot':
         verbalizers = ['senang', 'marah', 
                     'takut', 'sedih', 

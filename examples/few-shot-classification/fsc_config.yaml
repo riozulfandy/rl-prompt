@@ -29,5 +29,5 @@ max_train_steps: 12000
 train_shuffle: false
 eval_steps: 10
 save_steps: 100
-learning_rate: 5e-3
+learning_rate: 5e-5
 random_seed: null
