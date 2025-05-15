@@ -109,6 +109,30 @@ class PromptedClassificationReward(BaseReward):
             # Log quantities such as accuracy and class-wise reward
             acc = correct.float().mean()
             quantities_to_log['acc'] = acc
+
+            # Calculate F1 score
+            predicted_labels = torch.argmax(class_probs, dim=-1)
+            class_labels_tensor = torch.tensor(class_labels, device=predicted_labels.device, dtype=torch.long)
+            
+            current_prompt_f1_scores = []
+            for c_idx in range(self.num_classes):
+                tp = ((predicted_labels == c_idx) & (class_labels_tensor == c_idx)).sum().float()
+                fp = ((predicted_labels == c_idx) & (class_labels_tensor != c_idx)).sum().float()
+                fn = ((predicted_labels != c_idx) & (class_labels_tensor == c_idx)).sum().float()
+
+                precision = tp / (tp + fp + 1e-8)  # Add epsilon to avoid division by zero
+                recall = tp / (tp + fn + 1e-8)     # Add epsilon to avoid division by zero
+                
+                f1_class = 2 * (precision * recall) / (precision + recall + 1e-8)
+                quantities_to_log[f"f1_class_{c_idx}"].append(f1_class.item())
+                current_prompt_f1_scores.append(f1_class)
+            
+            if current_prompt_f1_scores: # Ensure list is not empty
+                macro_f1 = torch.stack(current_prompt_f1_scores).mean().item()
+                quantities_to_log['macro_f1'].append(macro_f1)
+            else: # Handle case with no classes or empty batch for F1
+                quantities_to_log['macro_f1'].append(0.0)
+                
             for c in range(self.num_classes):
                 class_idx = np.array(class_labels) == c
                 class_rewards = gap_rewards[class_idx]
