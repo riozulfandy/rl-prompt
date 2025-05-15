@@ -10,11 +10,11 @@ from .model_utils import _top_k_logits, _top_p_logits
 
 
 SUPPORTED_LMS = ['distilgpt2', 'gpt2', 'gpt2-medium',
-                 'gpt2-large', 'gpt2-xl', 'flax-community/gpt2-small-indonesian']
+                 'gpt2-large', 'gpt2-xl', 'indobenchmark/indogpt']
 
 LM_HIDDEN_SIZES = {'distilgpt2': 768,
                    'gpt2': 768,
-                   'flax-community/gpt2-small-indonesian': 768,
+                   'indobenchmark/indogpt': 768,
                    'gpt2-medium': 1024,
                    'gpt2-large': 1280,
                    'gpt2-xl': 1600}
