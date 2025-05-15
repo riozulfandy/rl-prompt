@@ -24,7 +24,7 @@ def make_single_prompt_model(model: BaseModel,
 
 @dataclass
 class LMAdaptorModelConfig:
-    policy_lm: str = "indobenchmark/indogpt"
+    policy_lm: str = "indonlp/cendol-mt5-small-inst"
     # Name of the backbone pretrained LM
     hidden_size: int = 2048
     # Dimension for the hidden state of the enclosed adaptor MLP
@@ -46,4 +46,4 @@ class SinglePromptModelConfig:
     prompt_length: int = 5
     prompt_train_batch_size: int = 8
     prompt_infer_batch_size: int = 8
-    source_str: str = "<|endoftext|>'"
+    source_str: str = "</s>"
