@@ -11,8 +11,7 @@ def ppo_policy_loss(
     actions: torch.LongTensor,
     advantages: torch.Tensor,
     sequence_length: torch.LongTensor,
-    clip_ratio: float = 0.2,
-) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    clip_ratio: float = 0.2) -> Tuple[torch.Tensor, Dict[str, Any]]:
     """Policy loss for PPO with robust tensor shape handling
     
     Arguments:
@@ -90,8 +89,7 @@ def ppo_policy_loss(
 def ppo_value_loss(
     values: torch.Tensor,
     returns: torch.Tensor,
-    sequence_length: torch.LongTensor,
-) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    sequence_length: torch.LongTensor) -> Tuple[torch.Tensor, Dict[str, Any]]:
     """Value function loss for PPO with robust tensor shape handling
     
     Arguments:
@@ -142,8 +140,7 @@ def compute_gae(
     values: torch.Tensor,
     sequence_length: torch.LongTensor,
     gamma: float = 0.99,
-    lam: float = 0.95,
-) -> Tuple[torch.Tensor, torch.Tensor]:
+    lam: float = 0.95) -> Tuple[torch.Tensor, torch.Tensor]:
     """Compute Generalized Advantage Estimation (GAE) and returns
     
     Arguments:
@@ -204,9 +201,8 @@ def ppo_loss(
     sequence_length: torch.LongTensor,
     clip_ratio: float = 0.2,
     value_coef: float = 0.5,
-    entropy_coef: float = 0.01,
-) -> Tuple[torch.Tensor, Dict[str, Any]]:
-    """Combined PPO loss function
+    entropy_coef: float = 0.01) -> Tuple[torch.Tensor, Dict[str, Any]]:
+    """Combined PPO loss function with robust shape handling
     
     Arguments:
         logits: [batch_size, sequence_length, vocab_size] - Current policy logits
@@ -214,12 +210,9 @@ def ppo_loss(
         values: [batch_size, sequence_length] - Value estimates
         actions: [batch_size, sequence_length] - Actions that were taken
         rewards: [batch_size] - Rewards
-        returns: [batch_size] - Returns
-        advantages: [batch_size] - Advantage estimates
+        returns: [batch_size] or [batch_size, sequence_length] - Returns
+        advantages: [batch_size] or [batch_size, sequence_length] - Advantage estimates
         sequence_length: [batch_size] - Length of each sequence
-        clip_ratio: float - Clip parameter for PPO
-        value_coef: float - Value loss coefficient
-        entropy_coef: float - Entropy coefficient
     """
     # Policy loss
     policy_raw_losses, policy_quantities_to_log = ppo_policy_loss(
@@ -264,6 +257,7 @@ def ppo_loss(
         {"entropy": entropy}
     ])
     
+    # Create a safe version of statistics gathering
     loss_log = {
         "loss": loss,
         "sequence_length": sequence_length.float().mean(),
@@ -272,17 +266,57 @@ def ppo_loss(
             sequence_length=sequence_length,
             average_across_timesteps=True,
             sum_over_timesteps=False),
-        "rewards": rewards.mean(),
-        "returns": returns.mean(),
-        "advantages": advantages.mean(),
     }
     
+    # Safely add rewards/returns/advantages statistics
+    if rewards is not None:
+        loss_log["rewards"] = rewards.mean()
+    
+    # Safe function to compute statistics with proper error handling
+    def safe_get_stats(tensor, name, seq_lengths=None):
+        try:
+            # For scalar tensors
+            if tensor.dim() == 0:
+                return {f"{name}/mean": tensor.item()}
+                
+            # For 1D tensors
+            if tensor.dim() == 1:
+                return {
+                    f"{name}/min": tensor.min().item(),
+                    f"{name}/max": tensor.max().item(),
+                    f"{name}/mean": tensor.mean().item()
+                }
+                
+            # For 2D tensors that match [batch_size, seq_len]
+            if tensor.dim() == 2 and seq_lengths is not None:
+                batch_size = seq_lengths.shape[0]
+                if tensor.shape[0] == batch_size:
+                    try:
+                        masked_mean, masked_min, masked_max = loss_utils.get_masked_mean_min_max(
+                            tensor, lengths=seq_lengths)
+                        return {
+                            f"{name}/min": masked_min,
+                            f"{name}/max": masked_max,
+                            f"{name}/mean": masked_mean
+                        }
+                    except Exception:
+                        # Fallback to basic stats if masked stats fail
+                        pass
+                        
+            # Default case - unmasked stats for any tensor
+            return {
+                f"{name}/min": tensor.min().item(),
+                f"{name}/max": tensor.max().item(),
+                f"{name}/mean": tensor.mean().item()
+            }
+        except Exception as e:
+            # Ultimate fallback - just report the error
+            return {f"{name}/error": str(e)}
+    
+    # Process all quantities for logging with safe statistics
     for key, value in quantities_to_log.items():
-        masked_mean, masked_min, masked_max = \
-            loss_utils.get_masked_mean_min_max(value,
-                                              lengths=sequence_length)
-        loss_log[f"{key}/min"] = masked_min
-        loss_log[f"{key}/max"] = masked_max
-        loss_log[f"{key}/mean"] = masked_mean
+        if isinstance(value, torch.Tensor):
+            stats = safe_get_stats(value, key, sequence_length)
+            loss_log.update(stats)
     
     return loss, loss_log
