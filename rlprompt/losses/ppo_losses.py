@@ -13,21 +13,23 @@ def ppo_policy_loss(
     sequence_length: torch.LongTensor,
     clip_ratio: float = 0.2,
 ) -> Tuple[torch.Tensor, Dict[str, Any]]:
-    """PPO policy loss function with clipped objective
+    """Policy loss for PPO with robust tensor shape handling
     
     Arguments:
-        logits: [batch_size, sequence_length, vocab_size] - Current policy logits
+        logits: [batch_size, sequence_length, vocab_size] - Policy logits
         old_logits: [batch_size, sequence_length, vocab_size] - Old policy logits
-        actions: [batch_size, sequence_length] - Actions that were taken
-        advantages: [batch_size] - Advantage estimates
+        actions: [batch_size, sequence_length] - Taken actions
+        advantages: Tensor of advantages - Can be [batch_size, sequence_length], [batch_size], or [batch_size*sequence_length]
         sequence_length: [batch_size] - Length of each sequence
-        clip_ratio: float - Clip parameter for PPO
+        clip_ratio: PPO clipping parameter
     """
-    # Get log probabilities of actions under current and old policies
+    batch_size, seq_len = logits.shape[:2]
+    
+    # Get log probabilities
     log_probs = F.log_softmax(logits, dim=-1)
     old_log_probs = F.log_softmax(old_logits, dim=-1)
     
-    # Gather the log probs for the actions that were actually taken
+    # Gather log probs of actions
     log_probs_taken = loss_utils.gather_2d_on_last_dim(
         tensor=log_probs,
         index=actions,
@@ -37,35 +39,50 @@ def ppo_policy_loss(
         index=actions,
         shape=actions.shape)
     
-    # Calculate the ratio of new/old policy probabilities
+    # Calculate probability ratio
     ratio = torch.exp(log_probs_taken - old_log_probs_taken.detach())
     
-    # Fix: Properly reshape advantages to match ratio's dimensions
-    batch_size = logits.shape[0]
-    seq_len = logits.shape[1]
-    # Reshape advantages to [batch_size, seq_len] if it's flattened
-    if advantages.dim() == 1:
-        advantages_reshaped = advantages.view(batch_size, seq_len)
+    # Robustly reshape advantages to match ratio's shape
+    if advantages.shape == ratio.shape:
+        # Already the correct shape, no change needed
+        advantages_expanded = advantages
+    elif advantages.dim() == 1:
+        if advantages.shape[0] == batch_size:
+            # [batch_size] → [batch_size, seq_len]
+            advantages_expanded = advantages.unsqueeze(1).expand_as(ratio)
+        elif advantages.shape[0] == batch_size * seq_len:
+            # [batch_size*seq_len] → [batch_size, seq_len]
+            advantages_expanded = advantages.view(batch_size, seq_len)
+        else:
+            raise ValueError(f"Cannot reshape advantages of shape {advantages.shape} to match ratio shape {ratio.shape}")
+    elif advantages.dim() == 2 and advantages.shape[0] == batch_size:
+        if advantages.shape[1] == 1:
+            # [batch_size, 1] → [batch_size, seq_len]
+            advantages_expanded = advantages.expand_as(ratio)
+        elif advantages.shape[1] == seq_len:
+            # [batch_size, seq_len] - already correct
+            advantages_expanded = advantages
+        else:
+            raise ValueError(f"Cannot reshape advantages of shape {advantages.shape} to match ratio shape {ratio.shape}")
     else:
-        advantages_reshaped = advantages
+        raise ValueError(f"Unsupported advantages shape: {advantages.shape}, expected compatible with {ratio.shape}")
     
-    # Expand to match ratio's shape
-    advantages_expanded = advantages_reshaped.unsqueeze(-1) if ratio.dim() > advantages_reshaped.dim() else advantages_reshaped
-    advantages_expanded = advantages_expanded.expand_as(ratio)
-    
-    # Calculate the surrogate loss with clipping
+    # Compute surrogate objectives
     surr1 = ratio * advantages_expanded
     surr2 = torch.clamp(ratio, 1.0 - clip_ratio, 1.0 + clip_ratio) * advantages_expanded
-    
-    # PPO objective is negative because we want to maximize it
     raw_losses = -torch.min(surr1, surr2)
     
-    # Logging quantities
+    # Quantities to log
     quantities_to_log = {
         "ratio": ratio,
+        "ratio_mean": ratio.mean(),
+        "ratio_min": ratio.min(),
+        "ratio_max": ratio.max(),
+        "advantages": advantages_expanded,
+        "advantages_mean": advantages_expanded.mean(),
+        "entropy": -(log_probs * torch.exp(log_probs)).sum(-1),
         "surr1": surr1,
         "surr2": surr2,
-        "advantages": advantages_expanded,
     }
     
     return raw_losses, quantities_to_log
@@ -75,22 +92,47 @@ def ppo_value_loss(
     returns: torch.Tensor,
     sequence_length: torch.LongTensor,
 ) -> Tuple[torch.Tensor, Dict[str, Any]]:
-    """Value function loss for PPO
+    """Value function loss for PPO with robust tensor shape handling
     
     Arguments:
         values: [batch_size, sequence_length] - Value estimates
-        returns: [batch_size] - Returns
+        returns: Tensor of returns - Can be [batch_size, sequence_length], [batch_size], or [batch_size*sequence_length]
         sequence_length: [batch_size] - Length of each sequence
     """
-    # Expand returns to match the shape of values
-    returns_expanded = returns.view(-1, 1).expand_as(values)
+    batch_size, seq_len = values.shape
     
-    # Calculate MSE loss between values and returns
+    # Robustly reshape returns to match values' shape
+    if returns.shape == values.shape:
+        # Already the correct shape, no change needed
+        returns_expanded = returns
+    elif returns.dim() == 1:
+        if returns.shape[0] == batch_size:
+            # [batch_size] → [batch_size, seq_len]
+            returns_expanded = returns.unsqueeze(1).expand_as(values)
+        elif returns.shape[0] == batch_size * seq_len:
+            # [batch_size*seq_len] → [batch_size, seq_len]
+            returns_expanded = returns.view(batch_size, seq_len)
+        else:
+            raise ValueError(f"Cannot reshape returns of shape {returns.shape} to match values shape {values.shape}")
+    elif returns.dim() == 2 and returns.shape[0] == batch_size:
+        if returns.shape[1] == 1:
+            # [batch_size, 1] → [batch_size, seq_len]
+            returns_expanded = returns.expand_as(values)
+        elif returns.shape[1] == seq_len:
+            # [batch_size, seq_len] - already correct
+            returns_expanded = returns
+        else:
+            raise ValueError(f"Cannot reshape returns of shape {returns.shape} to match values shape {values.shape}")
+    else:
+        raise ValueError(f"Unsupported returns shape: {returns.shape}, expected compatible with {values.shape}")
+    
+    # Calculate MSE loss
     raw_losses = F.mse_loss(values, returns_expanded, reduction="none")
     
     quantities_to_log = {
         "values": values,
         "returns": returns_expanded,
+        "value_loss_mean": raw_losses.mean(),
     }
     
     return raw_losses, quantities_to_log
