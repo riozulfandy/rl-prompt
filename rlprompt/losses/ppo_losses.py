@@ -40,8 +40,18 @@ def ppo_policy_loss(
     # Calculate the ratio of new/old policy probabilities
     ratio = torch.exp(log_probs_taken - old_log_probs_taken.detach())
     
-    # Expand advantages to match the shape of ratio
-    advantages_expanded = advantages.view(-1, 1).expand_as(ratio)
+    # Fix: Properly reshape advantages to match ratio's dimensions
+    batch_size = logits.shape[0]
+    seq_len = logits.shape[1]
+    # Reshape advantages to [batch_size, seq_len] if it's flattened
+    if advantages.dim() == 1:
+        advantages_reshaped = advantages.view(batch_size, seq_len)
+    else:
+        advantages_reshaped = advantages
+    
+    # Expand to match ratio's shape
+    advantages_expanded = advantages_reshaped.unsqueeze(-1) if ratio.dim() > advantages_reshaped.dim() else advantages_reshaped
+    advantages_expanded = advantages_expanded.expand_as(ratio)
     
     # Calculate the surrogate loss with clipping
     surr1 = ratio * advantages_expanded
