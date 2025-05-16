@@ -18,7 +18,7 @@ from fsc_helpers import (PromptedClassificationRewardConfig,
 # Compose default config
 config_list = [PromptedClassificationRewardConfig,
                 FewShotClassificationDatasetConfig, LMAdaptorModelConfig,
-                SinglePromptModelConfig, SQLModuleConfig, PPOModuleConfig, TrainerConfig]
+                SinglePromptModelConfig, PPOModuleConfig, TrainerConfig]
 cs = compose_hydra_config_store('base_fsc', config_list)
 
 
