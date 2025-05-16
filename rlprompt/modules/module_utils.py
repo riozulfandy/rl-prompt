@@ -7,7 +7,7 @@ from enum import Enum
 class ForwardMode(Enum):
     SQL_ON = "SQL_ON"
     SQL_OFF_GT = "SQL_OFF_GT"
-   
+    PPO_ON = "PPO_ON"  # Added PPO mode
     INFER = "INFER"
 
 def get_reward_shaping_func(

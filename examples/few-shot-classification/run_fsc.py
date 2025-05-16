@@ -4,7 +4,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from rlprompt.models import (LMAdaptorModelConfig, SinglePromptModelConfig,
                              make_lm_adaptor_model, make_single_prompt_model)
-from rlprompt.modules import SQLModuleConfig, make_sql_module
+from rlprompt.modules import SQLModuleConfig, make_sql_module, PPOModuleConfig, make_ppo_module
 from rlprompt.trainers import TrainerConfig, make_trainer
 from rlprompt.utils.utils import (colorful_print, compose_hydra_config_store,
                                   get_hydra_output_dir)
@@ -18,7 +18,7 @@ from fsc_helpers import (PromptedClassificationRewardConfig,
 # Compose default config
 config_list = [PromptedClassificationRewardConfig,
                 FewShotClassificationDatasetConfig, LMAdaptorModelConfig,
-                SinglePromptModelConfig, SQLModuleConfig, TrainerConfig]
+                SinglePromptModelConfig, SQLModuleConfig, PPOModuleConfig, TrainerConfig]
 cs = compose_hydra_config_store('base_fsc', config_list)
 
 
@@ -39,7 +39,11 @@ def main(config: "DictConfig"):
     prompt_model = make_single_prompt_model(policy_model, config)
     reward = make_prompted_classification_reward(num_classes, verbalizers, 
                                                  template, config)
-    algo_module = make_sql_module(prompt_model, reward, config)
+                                                
+    if config.algorithm == 'sql':
+        algo_module = make_sql_module(policy_model, reward, config)
+    elif config.algorithm == 'ppo':
+        algo_module = make_ppo_module(policy_model, reward, config)
 
     
     config.train_batch_size = len(train_dataset)
