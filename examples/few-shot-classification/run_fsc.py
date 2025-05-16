@@ -40,9 +40,9 @@ def main(config: "DictConfig"):
     reward = make_prompted_classification_reward(num_classes, verbalizers, 
                                                  template, config)
                                                 
-    if config.algorithm == 'sql':
+    if config.training_mode == 'sql-onpolicy':
         algo_module = make_sql_module(policy_model, reward, config)
-    elif config.algorithm == 'ppo':
+    elif config.training_mode == 'ppo-onpolicy':
         algo_module = make_ppo_module(policy_model, reward, config)
 
     
