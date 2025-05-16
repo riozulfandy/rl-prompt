@@ -7,6 +7,7 @@ import os
 import wandb
 import json
 import click
+import time
 
 from rlprompt.modules import BaseModule
 from rlprompt.utils import utils
@@ -117,6 +118,10 @@ class Trainer:
               project_name: Optional[str] = None,
               run_name: Optional[str] = None,
               config: Optional["DictConfig"] = None) -> None:
+        start_time = time.time() # Record start time
+        if torch.cuda.is_available():
+            torch.cuda.reset_peak_memory_stats() # Reset peak memory stats for the current device
+
         # Configure Wandb reporting
         if report_to_wandb is None:
             report_to_wandb = self.report_to_wandb
@@ -191,6 +196,31 @@ class Trainer:
                             "model_state_dict": self.module.state_dict()},
                            os.path.join(ckpt_save_dir,
                                         f"ckpt.epoch.{epoch+1}.pth"))
+
+        end_time = time.time()
+        training_duration_seconds = end_time - start_time
+        training_duration_minutes = training_duration_seconds / 60
+        training_duration_hours = training_duration_minutes / 60
+
+        print(f"Total training time: {training_duration_hours:.2f} hours ({training_duration_minutes:.2f} minutes)")
+
+        log_payload = {
+            "train/total_training_time_seconds": training_duration_seconds,
+            "train/total_training_time_minutes": training_duration_minutes,
+            "train/total_training_time_hours": training_duration_hours,
+        }
+
+        if torch.cuda.is_available():
+            peak_memory_bytes = torch.cuda.max_memory_allocated()
+            peak_memory_mb = peak_memory_bytes / (1024 * 1024)
+            peak_memory_gb = peak_memory_mb / 1024
+            print(f"Peak GPU memory usage: {peak_memory_mb:.2f} MB ({peak_memory_gb:.2f} GB)")
+            log_payload["train/peak_gpu_memory_mb"] = peak_memory_mb
+            log_payload["train/peak_gpu_memory_gb"] = peak_memory_gb
+        
+        if report_to_wandb and wandb.run is not None:
+            wandb.log(log_payload)
+            wandb.finish()
 
     def _get_eval_dataloader(self, eval_dataset: Dataset) -> DataLoader:
         return DataLoader(eval_dataset,
