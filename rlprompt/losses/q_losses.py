@@ -35,7 +35,7 @@ def q_learning_loss_with_sparse_rewards(
     q_values_s_t_a_t = loss_utils.gather_2d_on_last_dim(
         tensor=logits,
         index=actions,
-        shape=logits.shape,
+        shape=actions.shape,
     )
 
     max_q_target_s_t_a = target_logits.max(dim=-1).values.detach()
