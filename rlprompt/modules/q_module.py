@@ -184,10 +184,9 @@ class QModule(BaseModule):
         Greedy inference using the online model.
         """
         self._model.eval()
-        return self._model.generate(
-            **batch,
-            do_sample=False,
-            num_beams=1,
-            top_k=None, 
-            top_p=1.0  
-        )
+        return self._model.generate(**batch,
+                                    do_sample=False,
+                                    top_k=self._top_k,
+                                    top_p=self._top_p,
+                                    num_beams=self._num_beams,
+                                    infer=True)
