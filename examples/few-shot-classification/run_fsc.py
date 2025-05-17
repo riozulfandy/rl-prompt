@@ -4,7 +4,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from rlprompt.models import (LMAdaptorModelConfig, SinglePromptModelConfig,
                              make_lm_adaptor_model, make_single_prompt_model)
-from rlprompt.modules import SQLModuleConfig, make_sql_module
+from rlprompt.modules import SQLModuleConfig, make_sql_module, QModule, make_q_module
 from rlprompt.trainers import TrainerConfig, make_trainer
 from rlprompt.utils.utils import (colorful_print, compose_hydra_config_store,
                                   get_hydra_output_dir)
@@ -18,7 +18,7 @@ from fsc_helpers import (PromptedClassificationRewardConfig,
 # Compose default config
 config_list = [PromptedClassificationRewardConfig,
                 FewShotClassificationDatasetConfig, LMAdaptorModelConfig,
-                SinglePromptModelConfig, SQLModuleConfig, TrainerConfig]
+                SinglePromptModelConfig, SQLModuleConfig, QModule, TrainerConfig]
 cs = compose_hydra_config_store('base_fsc', config_list)
 
 
@@ -39,15 +39,23 @@ def main(config: "DictConfig"):
     prompt_model = make_single_prompt_model(policy_model, config)
     reward = make_prompted_classification_reward(num_classes, verbalizers, 
                                                  template, config)
-    algo_module = make_sql_module(prompt_model, reward, config)
-
     
+    try:
+        if config.rl_method != 'q':
+            algo_module = make_sql_module(prompt_model, reward, config)
+            print(f"Using SQLModule")
+        else:
+            algo_module = make_q_module(prompt_model, reward, config)
+            print("Using QMOdule")
+    except Exception as e:
+        print(f"Error in creating algo module: {e}. Use default QModule.")
+        algo_module = make_q_module(prompt_model, reward, config)
+
     config.train_batch_size = len(train_dataset)
     config.eval_batch_size = len(val_dataset)
     config.save_dir = os.path.join(output_dir, config.save_dir)
     trainer = make_trainer(algo_module, train_dataset, val_dataset, config)
     trainer.train(config=config)
-
 
 if __name__ == "__main__":
     main()

@@ -13,7 +13,7 @@ dataset_seed: 0
 task_lm: "distilroberta-base"
 
 # Single Prompt Model
-prompt_length: 5
+prompt_length: 2
 prompt_train_batch_size: 16
 prompt_infer_batch_size: 1
 
@@ -24,8 +24,14 @@ reward_shaping_new_min: 0
 reward_shaping_new_max: 5
 top_k: 256
 
+# Q Module
+gamma: 0.99
+
+# RL method
+rl_method: 'q'
+
 # Trainer
-max_train_steps: 12000
+max_train_steps: 6000
 train_shuffle: false
 eval_steps: 10
 save_steps: 100

@@ -137,7 +137,7 @@ def make_prompted_classification_reward(
 
 @dataclass
 class PromptedClassificationRewardConfig:
-    task_lm: str = 'indolem/indobert-base-uncased'
+    task_lm: str = 'distilroberta-base'
     is_mask_lm: Optional[bool] = None
     compute_zscore: bool = True
     incorrect_coeff: float = 180.0
