@@ -50,6 +50,7 @@ def make_q_module(
 class SQLModuleConfig:
     sql_loss_impl: str = "v2_v2r_v3_v3r"
     training_mode: str = "sql-onpolicy"
+    algorithm: str = "sql-onpolicy"
     mix_strategy: Optional[str] = None
     # Target model setting
     target_update_method: str = "polyak"
@@ -69,6 +70,7 @@ class SQLModuleConfig:
 @dataclass
 class QModuleConfig:
     # Q-Learning specific
+    algorithm: str = "q-onpolicy"
     gamma: float = 0.99
     
     target_update_method: str = "polyak" 
