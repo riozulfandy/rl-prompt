@@ -40,16 +40,12 @@ def main(config: "DictConfig"):
     reward = make_prompted_classification_reward(num_classes, verbalizers, 
                                                  template, config)
     
-    try:
-        if config.rl_method != 'q':
-            algo_module = make_sql_module(prompt_model, reward, config)
-            print(f"Using SQLModule")
-        else:
-            algo_module = make_q_module(prompt_model, reward, config)
-            print("Using QMOdule")
-    except Exception as e:
-        print(f"Error in creating algo module: {e}. Use default QModule.")
+    if config.algorithm == 'sql-onpolicy':
+        algo_module = make_sql_module(prompt_model, reward, config)
+        print(f"Using SQLModule")
+    elif config.algorithm == 'q-onpolicy':
         algo_module = make_q_module(prompt_model, reward, config)
+        print("Using QMOdule")
 
     config.train_batch_size = len(train_dataset)
     config.eval_batch_size = len(val_dataset)

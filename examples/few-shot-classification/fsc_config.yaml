@@ -28,7 +28,7 @@ top_k: 256
 gamma: 0.99
 
 # RL method
-rl_method: 'q'
+algorithm: 'q-onpolicy'
 
 # Trainer
 max_train_steps: 6000
