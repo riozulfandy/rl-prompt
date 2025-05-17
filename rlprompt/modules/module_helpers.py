@@ -66,6 +66,8 @@ class SQLModuleConfig:
     top_k: Optional[int] = None
     top_p: float = 1.0
     num_beams: int = 1
+    # Q learning parameters
+    gamma: float = 0.99 # just for compatibility
 
 @dataclass
 class QModuleConfig:
