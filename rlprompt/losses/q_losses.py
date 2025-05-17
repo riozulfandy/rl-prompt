@@ -1,5 +1,5 @@
 import torch
-import torch.functional as F
+import torch.nn.functional as F
 from typing import Dict, Tuple, Any
 
 from rlprompt.losses import loss_utils
