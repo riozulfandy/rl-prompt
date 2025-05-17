@@ -41,9 +41,9 @@ def main(config: "DictConfig"):
                                                  template, config)
                                                 
     if config.training_mode == 'sql-onpolicy':
-        algo_module = make_sql_module(policy_model, reward, config)
+        algo_module = make_sql_module(prompt_model, reward, config)
     elif config.training_mode == 'ppo-onpolicy':
-        algo_module = make_ppo_module(policy_model, reward, config)
+        algo_module = make_ppo_module(prompt_model, reward, config)
 
     
     config.train_batch_size = len(train_dataset)
