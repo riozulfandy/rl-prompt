@@ -6,7 +6,7 @@ defaults:
 # Data
 num_shots: 16
 base_path: "./data"
-dataset: "???"
+dataset: "sst-2"
 dataset_seed: 0
 
 # Reward
@@ -17,14 +17,12 @@ prompt_length: 2
 prompt_train_batch_size: 16
 prompt_infer_batch_size: 1
 
-# SQL Module
+# Module (Algorithm) config
 reward_shaping_old_min: 0
 reward_shaping_old_max: 1
 reward_shaping_new_min: 0
 reward_shaping_new_max: 5
 top_k: 256
-
-# Q / PPO Module
 gamma: 0.99
 
 # Trainer
@@ -35,5 +33,5 @@ save_steps: 100
 learning_rate: 5e-5
 random_seed: null
 
-# Algorithm
+# Algorithm "ppo-onpolicy" (ppo), "q-onpolicy" (q), or "sql-onpolicy" (sql)
 training_mode: "ppo-onpolicy"
