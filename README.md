@@ -56,7 +56,7 @@ Run the following script (for Windows):
 .\download-and-extract.ps1
 ```
 
-Or download manually from [Kaggle](https://www.kaggle.com/datasets/riozulfandy04/rl-prompt-16-shot-classification-dataset)
+Or download manually from [Kaggle](https://www.kaggle.com/datasets/riozulfandy04/rl-prompt-16-shot-classification-dataset), extract, and put in `examples/few-shot-classification/data/16-shot`
 
 ---
 
@@ -74,7 +74,7 @@ Run a 16-shot classification experiment using:
 python run_fsc.py \
   dataset=[sst-2, yelp-2, mr, cr, agnews, sst-5, yelp-5] \
   dataset_seed=[0, 1, 2, 3, 4] \
-  prompt_length=[optional integer, default=5] \
+  prompt_length=[optional integer, default=2] \
   task_lm=[distilroberta-base, roberta-base, roberta-large, \
            distilgpt2, gpt2, gpt2-medium, gpt2-large, gpt2-xl] \
   random_seed=[optional integer]
