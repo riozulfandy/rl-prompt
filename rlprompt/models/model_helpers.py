@@ -43,7 +43,7 @@ class LMAdaptorModelConfig:
 
 @dataclass
 class SinglePromptModelConfig:
-    prompt_length: int = 5
-    prompt_train_batch_size: int = 8
-    prompt_infer_batch_size: int = 8
+    prompt_length: int = 2
+    prompt_train_batch_size: int = 16
+    prompt_infer_batch_size: int = 1
     source_str: str = "<|endoftext|>"

@@ -4,7 +4,7 @@ from omegaconf import DictConfig, OmegaConf
 
 from rlprompt.models import (LMAdaptorModelConfig, SinglePromptModelConfig,
                              make_lm_adaptor_model, make_single_prompt_model)
-from rlprompt.modules import ModuleConfig, make_sql_module, make_ppo_module
+from rlprompt.modules import ModuleConfig, make_sql_module, make_ppo_module, make_q_module
 from rlprompt.trainers import TrainerConfig, make_trainer
 from rlprompt.utils.utils import (colorful_print, compose_hydra_config_store,
                                   get_hydra_output_dir)
@@ -42,16 +42,19 @@ def main(config: "DictConfig"):
                                                 
     if config.training_mode == 'sql-onpolicy':
         algo_module = make_sql_module(prompt_model, reward, config)
+        print("Using SQLModule")
     elif config.training_mode == 'ppo-onpolicy':
         algo_module = make_ppo_module(prompt_model, reward, config)
+        print("Using PPOModule")
+    elif config.training_mode == 'q-onpolicy':
+        algo_module = make_q_module(prompt_model, reward, config)
+        print("Using QModule")
 
-    
     config.train_batch_size = len(train_dataset)
     config.eval_batch_size = len(val_dataset)
     config.save_dir = os.path.join(output_dir, config.save_dir)
     trainer = make_trainer(algo_module, train_dataset, val_dataset, config)
     trainer.train(config=config)
-
 
 if __name__ == "__main__":
     main()
