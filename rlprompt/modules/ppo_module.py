@@ -23,7 +23,6 @@ class PPOModule(BaseModule):
         entropy_coef: float = 0.01,
         gamma: float = 0.99,
         lam: float = 0.95,
-        n_epochs: int = 4,
         training_mode: str = "ppo-onpolicy",
         mix_strategy: Optional[str] = None,
         reward_shaping: bool = True,
@@ -53,7 +52,6 @@ class PPOModule(BaseModule):
         self._entropy_coef = entropy_coef
         self._gamma = gamma
         self._lam = lam
-        self._n_epochs = n_epochs
         
         # Training settings
         self._training_mode = training_mode

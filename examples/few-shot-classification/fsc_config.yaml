@@ -24,11 +24,8 @@ reward_shaping_new_min: 0
 reward_shaping_new_max: 5
 top_k: 256
 
-# Q Module
+# Q / PPO Module
 gamma: 0.99
-
-# RL method
-algorithm: 'q-onpolicy'
 
 # Trainer
 max_train_steps: 6000
