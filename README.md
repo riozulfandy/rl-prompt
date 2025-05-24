@@ -176,7 +176,7 @@ python run_eval.py \
 
 ## Experiment Details
 
-All experimental results are available in the [`experiments`](experiments) directory. They include:
+All our experimental results are available in the [`experiments`](experiments) directory. They include:
 
 * RLPrompt results with PPO, DQN, and SQL
 * Supervised fine-tuning baselines for comparison
